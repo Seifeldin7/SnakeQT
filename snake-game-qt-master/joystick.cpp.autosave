@@ -1,0 +1,60 @@
+#include "joystick.h"
+
+joystick::joystick(QObject *parent, Snake* s) : QObject(parent)
+{
+    this->s = s;
+    SDL_Init(SDL_INIT_JOYSTICK);
+    joy  = SDL_JoystickOpen(0);
+    if(joy == NULL)
+    {
+        qDebug() <<"Joy Stick Not connected";
+        exit(1);
+    }
+    event = new SDL_Event();
+}
+void joystick::joystick_update()
+{
+  
+    while(SDL_PollEvent(event))
+    {
+        if(event->type == SDL_JOYAXISMOTION)
+        {
+            this->axisValue = event->jaxis.value;
+            //consider 4000 is dead zone
+            if(event->jaxis.value > 4000 && event->jaxis.axis==0  )
+            {
+                s->setDirection(Right);
+                //change snake direction
+            }
+            else if(event->jaxis.value < -4000 && event->jaxis.axis==0)
+            {
+                s->setDirection(Left);
+
+            }
+            else if(event->jaxis.value > 4000 && event->jaxis.axis==1)
+            {
+            s->setDirection(Bottom);
+
+            }
+            else if(event->jaxis.value < -4000 && event->jaxis.axis==1)
+            {
+            s->setDirection(Top);
+
+            }
+
+
+           // qDebug()<<"Axis" << event->jaxis.axis << "value= " <<event->jaxis.value;
+        }
+
+        else if(event->type == SDL_JOYBUTTONDOWN)
+        {
+            qDebug()<<"Button" << event->jbutton.button << "presed" ;
+
+        }
+    }
+
+}
+int joystick::getAxisValue()
+{
+    return axisValue;
+}
